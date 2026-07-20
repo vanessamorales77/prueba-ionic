@@ -1,0 +1,42 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title class="ion-text-center">
+      Lista de tareas
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-item>
+    <ion-input type="text" placeholder="Escribir nueva tarea..." name="task" [(ngModel)]="newTask"/>
+    <ion-button slot="end" (click)="addTask()" [disabled]="!newTask">
+      <ion-icon name="add-outline"></ion-icon>
+      Agregar
+    </ion-button>
+  </ion-item>
+  @if(tasks.length == 0){
+    <ion-item  lines="none">
+      <ion-label class="ion-text-center">
+        No hay tareas
+      </ion-label>
+    </ion-item>
+  } @else {
+    <ion-list>
+      @for(task of tasks; track task.id){
+        <ion-item>
+          <ion-checkbox
+            slot="start"
+            [checked]="task.completed"
+            (ionChange)="toggleComplete(task)">
+          </ion-checkbox>
+          <ion-label [class.completed]="task.completed">
+            {{task.name}}
+          </ion-label>
+          <ion-button slot="end" fill="clear" color="danger" (click)="deleteTask(task)">
+            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>
