@@ -4,12 +4,9 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonItem, IonInput, IonButt
 import { addIcons } from 'ionicons';
 import { addOutline, trashOutline, closeOutline, checkmarkOutline } from 'ionicons/icons';
 import { ActionSheet } from 'src/app/services/action-sheet';
+import { Preferences } from '@capacitor/preferences';
 
-export interface Task {
-  id: string;
-  name: string;
-  completed: boolean;
-}
+import { Task } from 'src/app/models/tasks.model';
 
 @Component({
   selector: 'app-home',
@@ -33,6 +30,7 @@ export interface Task {
 export class HomePage {
   public tasks: Task[] = [];
   public newTask: string = '';
+  private readonly TASKS_KEY = 'tasksKey';
 
   constructor(private actionSheetService: ActionSheet) {
     addIcons({
@@ -43,6 +41,16 @@ export class HomePage {
     });
   }
 
+  async ionViewWillEnter() {
+    const taskPreferences = await Preferences.get({ key: this.TASKS_KEY });
+    if (taskPreferences.value) {
+      const tasks = JSON.parse(taskPreferences.value);
+      if (Array.isArray(tasks)) {
+        this.tasks = tasks;
+      }
+    }
+  }
+
   addTask(){
     if(!this.existsTask(this.newTask)){
       this.tasks.push({
@@ -51,6 +59,7 @@ export class HomePage {
         completed: false
       });
       this.newTask = '';
+      this.saveTasks();
     } else {
       this.actionSheetService.presentInfo('¡Tarea ya existe!', 'La tarea ya existe en la lista');
     }
@@ -58,15 +67,24 @@ export class HomePage {
 
   toggleComplete(task: Task) {
     task.completed = !task.completed;
+    this.saveTasks();
   }
 
   deleteTask(task: Task) {
     this.actionSheetService.presentDeleteConfirm(task.name, () => {
       this.tasks = this.tasks.filter((item: Task) => item.id !== task.id);
+      this.saveTasks();
     });
   }
 
   private existsTask(name: string) {
     return this.tasks.find((item: Task) => item.name.toLowerCase().trim() === name.toLowerCase().trim());
+  }
+
+  saveTasks(){
+    Preferences.set({
+      key: this.TASKS_KEY,
+      value: JSON.stringify(this.tasks)
+    });
   }
 }
