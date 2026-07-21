@@ -8,13 +8,58 @@
 
 <ion-content [fullscreen]="true">
   <ion-item>
+    <ion-input type="text" placeholder="Nueva categoría..." name="category" [(ngModel)]="newCategory"/>
+    <ion-button slot="end" (click)="addCategory()" [disabled]="!newCategory">
+      <ion-icon name="add-outline"></ion-icon>
+      Agregar
+    </ion-button>
+  </ion-item>
+  @if(categories.length > 0){
+    <ion-list>
+      @for(category of categories; track category.id){
+        <ion-item>
+          @if(editingCategoryId === category.id){
+            <ion-input [(ngModel)]="editingCategoryName" (keyup.enter)="saveEditCategory(category)"></ion-input>
+            <ion-button slot="end" fill="clear" (click)="saveEditCategory(category)">
+              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+            </ion-button>
+          } @else {
+            <ion-label>{{category.name}}</ion-label>
+            <ion-button slot="end" fill="clear" (click)="startEditCategory(category)">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button slot="end" fill="clear" color="danger" (click)="deleteCategory(category)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
+          }
+        </ion-item>
+      }
+    </ion-list>
+    <ion-item>
+      <ion-select label="Filtrar por categoría" [(ngModel)]="filterCategoryId" interface="popover">
+        <ion-select-option value="all">Todas</ion-select-option>
+        @for(category of categories; track category.id){
+          <ion-select-option [value]="category.id">{{category.name}}</ion-select-option>
+        }
+      </ion-select>
+    </ion-item>
+  }
+  <ion-item>
     <ion-input type="text" placeholder="Escribir nueva tarea..." name="task" [(ngModel)]="newTask"/>
+    @if(categories.length > 0){
+      <ion-select slot="end" placeholder="Categoría" [(ngModel)]="selectedCategoryId" interface="popover">
+        @for(category of categories; track category.id){
+          <ion-select-option [value]="category.id">{{category.name}}</ion-select-option>
+        }
+      </ion-select>
+    }
     <ion-button slot="end" (click)="addTask()" [disabled]="!newTask">
       <ion-icon name="add-outline"></ion-icon>
       Agregar
     </ion-button>
   </ion-item>
-  @if(tasks.length == 0){
+
+  @if(filteredTasks.length == 0){
     <ion-item  lines="none">
       <ion-label class="ion-text-center">
         No hay tareas
@@ -22,7 +67,7 @@
     </ion-item>
   } @else {
     <ion-list>
-      @for(task of tasks; track task.id){
+      @for(task of filteredTasks; track task.id){
         <ion-item>
           <ion-checkbox
             slot="start"
@@ -30,7 +75,10 @@
             (ionChange)="toggleComplete(task)">
           </ion-checkbox>
           <ion-label [class.completed]="task.completed">
-            {{task.name}}
+            <div>{{task.name}}</div>
+            @if(getCategoryName(task.categoryId)){
+              <p>{{getCategoryName(task.categoryId)}}</p>
+            }
           </ion-label>
           <ion-button slot="end" fill="clear" color="danger" (click)="deleteTask(task)">
             <ion-icon slot="icon-only" name="trash-outline"></ion-icon>

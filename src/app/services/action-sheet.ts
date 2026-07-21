@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular/standalone';
-
+ 
 @Injectable({
   providedIn: 'root',
 })
 export class ActionSheet {
   constructor(private actionSheetController: ActionSheetController) {}
-
-  async presentDeleteConfirm(taskName: string, onDelete: () => void) {
+ 
+  async presentDeleteConfirm(itemName: string, onDelete: () => void, header: string = 'Eliminar') {
     const actionSheet = await this.actionSheetController.create({
-      header: 'Eliminar tarea',
-      subHeader: `¿Deseas eliminar "${taskName}"?`,
+      header: header,
+      subHeader: `¿Deseas eliminar "${itemName}"?`,
       buttons: [
         {
           text: 'Eliminar',
@@ -27,23 +27,23 @@ export class ActionSheet {
         },
       ],
     });
-
+ 
     await actionSheet.present();
   }
-
+ 
   async presentInfo(header: string, message: string) {
     const actionSheet = await this.actionSheetController.create({
       header: header,
       subHeader: message,
       buttons: [
         {
-          text: 'OK',
+          text: 'Ok',
           role: 'cancel',
           icon: 'checkmark-outline',
         },
       ],
     });
-
+ 
     await actionSheet.present();
   }
 }
