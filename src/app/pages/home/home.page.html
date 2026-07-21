@@ -1,90 +1,115 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
-    <ion-title class="ion-text-center">
-      Lista de tareas
-    </ion-title>
+    <ion-title>Mis Tareas</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-item>
-    <ion-input type="text" placeholder="Nueva categoría..." name="category" [(ngModel)]="newCategory"/>
+  @if(categoriesEnabled){
+
+  <ion-item lines="none">
+    <ion-input
+      type="text"
+      placeholder="Nueva categoría..."
+      name="category"
+      [(ngModel)]="newCategory"
+    />
     <ion-button slot="end" (click)="addCategory()" [disabled]="!newCategory">
       <ion-icon name="add-outline"></ion-icon>
-      Agregar
     </ion-button>
   </ion-item>
-  @if(categories.length > 0){
-    <ion-list>
-      @for(category of categories; track category.id){
-        <ion-item>
-          @if(editingCategoryId === category.id){
-            <ion-input [(ngModel)]="editingCategoryName" (keyup.enter)="saveEditCategory(category)"></ion-input>
-            <ion-button slot="end" fill="clear" (click)="saveEditCategory(category)">
-              <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
-            </ion-button>
-          } @else {
-            <ion-label>{{category.name}}</ion-label>
-            <ion-button slot="end" fill="clear" (click)="startEditCategory(category)">
-              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-            </ion-button>
-            <ion-button slot="end" fill="clear" color="danger" (click)="deleteCategory(category)">
-              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-            </ion-button>
-          }
-        </ion-item>
-      }
-    </ion-list>
+
+  <ion-item button lines="none" (click)="toggleCategoryManager()">
+    <ion-label>{{ showCategoryManager ? 'Ocultar categorías' : 'Ver categorías' }}</ion-label>
+    <ion-icon
+      slot="end"
+      [name]="showCategoryManager ? 'chevron-up-outline' : 'chevron-down-outline'"
+    ></ion-icon>
+  </ion-item>
+
+  @if(showCategoryManager && categories.length > 0){
+  <ion-list>
+    @for(category of categories; track category.id){
     <ion-item>
-      <ion-select label="Filtrar por categoría" [(ngModel)]="filterCategoryId" interface="popover">
-        <ion-select-option value="all">Todas</ion-select-option>
-        @for(category of categories; track category.id){
-          <ion-select-option [value]="category.id">{{category.name}}</ion-select-option>
-        }
-      </ion-select>
+      @if(editingCategoryId === category.id){
+      <ion-input
+        [(ngModel)]="editingCategoryName"
+        (keyup.enter)="saveEditCategory(category)"
+      ></ion-input>
+      <ion-button slot="end" fill="clear" (click)="saveEditCategory(category)">
+        <ion-icon slot="icon-only" name="checkmark-outline"></ion-icon>
+      </ion-button>
+      } @else {
+      <ion-label>{{ category.name }}</ion-label>
+      <ion-button slot="end" fill="clear" (click)="startEditCategory(category)">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button slot="end" fill="clear" color="danger" (click)="deleteCategory(category)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+      }
     </ion-item>
-  }
+    }
+  </ion-list>
+  } @if(categories.length > 0){
   <ion-item>
-    <ion-input type="text" placeholder="Escribir nueva tarea..." name="task" [(ngModel)]="newTask"/>
-    @if(categories.length > 0){
-      <ion-select slot="end" placeholder="Categoría" [(ngModel)]="selectedCategoryId" interface="popover">
-        @for(category of categories; track category.id){
-          <ion-select-option [value]="category.id">{{category.name}}</ion-select-option>
-        }
-      </ion-select>
+    <ion-select label="Filtrar por categoría" [(ngModel)]="filterCategoryId" interface="popover">
+      <ion-select-option value="all">Todas</ion-select-option>
+      @for(category of categories; track category.id){
+      <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+      }
+    </ion-select>
+  </ion-item>
+  } }
+
+  <ion-item>
+    <ion-input
+      type="text"
+      placeholder="Escribir nueva tarea..."
+      name="task"
+      [(ngModel)]="newTask"
+    />
+    @if(categoriesEnabled && categories.length > 0){
+    <ion-select
+      slot="end"
+      placeholder="Categoría"
+      [(ngModel)]="selectedCategoryId"
+      interface="popover"
+    >
+      @for(category of categories; track category.id){
+      <ion-select-option [value]="category.id">{{ category.name }}</ion-select-option>
+      }
+    </ion-select>
     }
     <ion-button slot="end" (click)="addTask()" [disabled]="!newTask">
       <ion-icon name="add-outline"></ion-icon>
-      Agregar
     </ion-button>
   </ion-item>
 
   @if(filteredTasks.length == 0){
-    <ion-item  lines="none">
-      <ion-label class="ion-text-center">
-        No hay tareas
-      </ion-label>
-    </ion-item>
+  <ion-item lines="none">
+    <ion-label class="ion-text-center">No hay tareas</ion-label>
+  </ion-item>
   } @else {
-    <ion-list>
-      @for(task of filteredTasks; track task.id){
-        <ion-item>
-          <ion-checkbox
-            slot="start"
-            [checked]="task.completed"
-            (ionChange)="toggleComplete(task)">
-          </ion-checkbox>
-          <ion-label [class.completed]="task.completed">
-            <div>{{task.name}}</div>
-            @if(getCategoryName(task.categoryId)){
-              <p>{{getCategoryName(task.categoryId)}}</p>
-            }
-          </ion-label>
-          <ion-button slot="end" fill="clear" color="danger" (click)="deleteTask(task)">
-            <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
-      }
-    </ion-list>
+  <ion-list>
+    @for(task of filteredTasks; track task.id){
+    <ion-item>
+      <ion-checkbox
+        slot="start"
+        [checked]="task.completed"
+        (ionChange)="toggleComplete(task)"
+      ></ion-checkbox>
+      <ion-label [class.completed]="task.completed">
+        <div>{{ task.name }}</div>
+        @if(categoriesEnabled && getCategoryName(task.categoryId)){
+        <p>{{ getCategoryName(task.categoryId) }}</p>
+        }
+      </ion-label>
+      <ion-button slot="end" fill="clear" color="danger" (click)="deleteTask(task)">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+    }
+  </ion-list>
   }
 </ion-content>
